@@ -4,6 +4,16 @@ from langchain.chat_models import ChatOpenAI
 from langchain.schema import HumanMessage
 import sys
 import yfinance as yf
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+NEWAPI_API_KEY = os.getenv("NEWAPI_API_KEY")
+FINANCIALAPI_API_KEY = os.getenv("FINANCIALAPI_API_KEY")
+
+
+
 #########################################
 def getcompaniesData(ticker_list):
     output_data = []
@@ -21,7 +31,7 @@ def getRevenueData(ticker):
     url = f'https://financialmodelingprep.com/api/v3/income-statement/{ticker}?'
     parameters = {
         'limit': 100,
-        'apikey':'a4ff4fe833047d87c2056c6fca36aa63'
+        'apikey':FINANCIALAPI_API_KEY
     }
     response = requests.get(url, params=parameters)
     if response.status_code == 200:
@@ -40,7 +50,7 @@ def getHeadlines(company):
         'from':'2023-07-31',
         'to':'2023-07-31',
         'language':'en',
-        'apiKey': '04cf3f29274c44519846bc7a3ecb6654' 
+        'apiKey': NEWAPI_API_KEY
     }
     response = requests.get(url, params=parameters)
     
@@ -104,9 +114,10 @@ def main(user_input):
 if __name__ == "__main__":
     tickers= sys.argv[1]
     jsons = getcompaniesData(tickers.split(','))
-    chat = ChatOpenAI(temperature = 0,openai_api_key="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")
-    answer = chat([HumanMessage(content=f'''Act as a financial analyst. You will be provided with an array of JSONs for companies, each containing the annual revenue for 5 years and news headlines. Your task is to give long-term and short-term recommendations for these companies\' stocks, using the provided data. Utilize the strategies of "Stock Selection," "Pair Trading," and "Market Timing" to formulate your recommendations. Combine the results and provide a very brief long-term recommendation and short-term recommendations, indicating whether to sell or buy. Please include a concise explanation for your recommendations.
+    chat = ChatOpenAI(temperature = 0,openai_api_key=OPENAI_API_KEY)
+    answer = chat([HumanMessage(content=f'''Act as a financial analyst. You will be provided with an array of JSONs for companies, each containing the annual revenue for 5 years and news headlines. Your task is to give long-term and short-term recommendations for these companies\' stocks, using the provided data. Utilize the strategies of "Stock Selection," "Pair Trading," and "Market Timing" to formulate your recommendations. Combine the results and provide a very brief long-term recommendation and short-term recommendations, indicating whether to sell or buy. Please include a concise explanation for your recommendations and keep the explanation and the summary consistent with the recommendations. To ensure a concise response, please provide a brief and focused answer that can fit within the available space.
     {jsons}''')])
+    jsons=[]
     print(answer.content)
 
 
